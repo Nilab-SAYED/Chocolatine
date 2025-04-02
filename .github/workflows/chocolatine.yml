@@ -32,3 +32,24 @@ jobs:
             cat coding-style-reports.log
             exit 1
           fi
+  check_program_compilation:
+    runs-on: ubuntu-latest
+    container:
+      image: epitechcontent/epitest-docker
+    needs: check_coding_style  # This ensures it runs AFTER coding style check
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Compile the program
+        run: timeout 120 make || { echo "Compilation failed or timed out"; exit 1; }
+
+      - name: Clean up build files
+        run: make clean
+
+      - name: Verify Executables
+        run: |
+          if [ ! -x "$EXECUTABLES" ]; then
+            echo "Executable $EXECUTABLES is missing or not executable"
+            exit 1
+          fi
