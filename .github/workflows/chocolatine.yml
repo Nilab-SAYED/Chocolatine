@@ -10,7 +10,7 @@ on:
 
 env:
   MIRROR_URL: "git@github.com:EpitechPGEPromo2029/B-DOP-200-BAR-2-1-chocolatine-nilab.sayed.git"
-  EXECUTABLES: "minshell2"
+  EXECUTABLES: "minishell2"
 
 jobs:
   check-repo:
@@ -45,4 +45,60 @@ jobs:
         run: |
           echo "Displaying coding style errors"
 
+  check_program_compilation:
+    needs: check-repo
+    if: ${{ needs.check-repo.outputs.skip != 'true' }}
+    runs-on: ubuntu-latest
+    container:
+      image: epitechcontent/epitest-docker
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Run make (compilation)
+        run: |
+          make
+        timeout-minutes: 2
+      - name: Run make clean
+        run: |
+          make clean
+      - name: Verify executables exist and are executable
+        run: |
+          IFS=',' read -ra EXECUTABLES_ARR <<< "${{ env.EXECUTABLES }}"
+          for exe in "${EXECUTABLES_ARR[@]}"; do
+            if [[ ! -x "$exe" ]]; then
+              echo "Executable $exe is missing or not executable."
+              exit 1
+            fi
+          done
+
+  run_tests:
+    needs: check_program_compilation
+    if: ${{ needs.check_program_compilation.outputs.skip != 'true' }}
+    runs-on: ubuntu-latest
+    container:
+      image: epitechcontent/epitest-docker
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Run tests
+        run: |
+          make tests_run
+        timeout-minutes: 2
+
+  push_to_mirror:
+    needs: run_tests
+    if: ${{ github.event_name == 'push' && needs.run_tests.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.GIT_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+      - name: Push to mirror repository
+        run: |
+          git remote set-url origin ${{ env.MIRROR_URL }}
+          git push --mirror
 
