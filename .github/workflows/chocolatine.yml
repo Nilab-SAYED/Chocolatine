@@ -1,5 +1,48 @@
-name : chocolatine workflow
+name: chocolatine workflow
 
 on:
   push:
+    branches-ignore:
+      - 'ga-ignore-*'
+  pull_request:
+    branches-ignore:
+      - 'ga-ignore-*'
+
+env:
+  MIRROR_URL: "git@github.com:EpitechPGEPromo2029/B-DOP-200-BAR-2-1-chocolatine-nilab.sayed.git"
+  EXECUTABLES: "cuddle"
+
+jobs:
+  check-repo:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check-repo.outputs.skip }}
+    steps:
+      - name: Check if the repository is the mirror repository
+        id: check-repo
+        run: |
+          if [[ "${{ github.repository }}" == "${{ env.MIRROR_URL }}" ]]; then
+            echo "This is the mirror repository. Skipping the workflow."
+            echo "::set-output name=skip::true"
+          else
+            echo "::set-output name=skip::false"
+          fi
+
+  check_coding_style:
+    needs: check-repo
+    if: ${{ needs.check-repo.outputs.skip != 'true' }}
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/epitech/coding-style-checker:latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Run coding style check
+        run: |
+          check.sh $(pwd) $(pwd)
+      - name: Display coding style errors
+        if: ${{ failure() }}
+        run: |
+          echo "Displaying coding style errors"
+
 
