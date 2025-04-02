@@ -10,7 +10,7 @@ on:
 
 env:
   MIRROR_URL: "git@github.com:EpitechPGEPromo2029/B-DOP-200-BAR-2-1-chocolatine-nilab.sayed.git"
-  EXECUTABLES: "cuddle"
+  EXECUTABLES: "minshell2"
 
 jobs:
   check-repo:
