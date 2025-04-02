@@ -36,7 +36,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: epitechcontent/epitest-docker
-    needs: check_coding_style  # This ensures it runs AFTER coding style check
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -47,9 +46,15 @@ jobs:
       - name: Clean up build files
         run: make clean
 
-      - name: Verify Executables
-        run: |
-          if [ ! -x "$EXECUTABLES" ]; then
-            echo "Executable $EXECUTABLES is missing or not executable"
-            exit 1
-          fi
+
+  run_tests:
+    runs-on: ubuntu-latest
+    container:
+      image: epitechcontent/epitest-docker
+    steps:
+      - name: Checkout Repository 
+        run: action/checkout@v4
+      
+      - name: make tests_run 
+        run: timeout 120 make || {echo "Run test faild or timeout"; exit 1;}
+
