@@ -57,4 +57,14 @@ jobs:
       
       - name: make tests_run 
         run: timeout 120 make || {echo "Run test faild or timeout"; exit 1;}
+  
+  push_to_mirror:
+      runs-on: ubuntu-latest
+      steps:
+      - name: Checkout Repository
+        run: actions/checkout@v4
+  
+      - name:  GIT_SSH_PRIVATE_KEY
+        run: |
+  
 
