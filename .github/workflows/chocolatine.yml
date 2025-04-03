@@ -12,8 +12,6 @@ env:
   MIRROR_URL: "git@github.com:EpitechPGEPromo2029/B-DOP-200-BAR-2-1-chocolatine-nilab.sayed.git"
   EXECUTABLES: "minishell2"
 
-
-
 jobs:
   check_coding_style:
     runs-on: ubuntu-latest
@@ -32,8 +30,10 @@ jobs:
             cat coding-style-reports.log
             exit 1
           fi
+
   check_program_compilation:
     runs-on: ubuntu-latest
+    needs: check_coding_style
     container:
       image: epitechcontent/epitest-docker
     steps:
@@ -46,25 +46,47 @@ jobs:
       - name: Clean up build files
         run: make clean
 
+      - name: Verify Executables
+        run: |
+          for exe in $EXECUTABLES; do
+            if [ ! -f "$exe" ]; then
+              echo "Error: $exe not found!"
+              exit 1
+            fi
+            if [ ! -x "$exe" ]; then
+              echo "Error: $exe is not executable!"
+              exit 1
+            fi
+          done
 
   run_tests:
     runs-on: ubuntu-latest
+    needs: check_program_compilation
     container:
       image: epitechcontent/epitest-docker
     steps:
       - name: Checkout Repository 
-        uses:  actions/checkout@v4
+        uses: actions/checkout@v4
       
-      - name: make tests_run 
-        run: timeout 120 make tests_run || { echo "Run test faild or timeout"; exit 1; }
-  
-  push_to_mirror:
-      runs-on: ubuntu-latest
-      steps:
-      - name: Checkout Repository
-        run: actions/checkout@v4
-  
-      - name:  GIT_SSH_PRIVATE_KEY
-        run: |
-  
+      - name: Run Tests
+        run: timeout 120 make tests_run || { echo "Run test failed or timeout"; exit 1; }
 
+  push_to_mirror:
+    runs-on: ubuntu-latest
+    needs: run_tests
+    if: github.event_name == 'push'  # Ensure it runs only on push events
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH Key
+        run: |
+            mkdir -p ~/.ssh
+            echo -e "${{ secrets.GIT_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+            ssh-keyscan -H github.com > ~/.ssh/known_hosts
+      
+      - name: Push to Mirror Repository
+        run: |
+          git remote add mirror "$MIRROR_URL"
+          git push --mirror mirror
