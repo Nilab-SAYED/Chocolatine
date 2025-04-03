@@ -56,7 +56,7 @@ jobs:
         uses:  actions/checkout@v4
       
       - name: make tests_run 
-        run: timeout 120 make tests_run || {echo "Run test faild or timeout"; exit 1;}
+        run: timeout 120 make tests_run || { echo "Run test faild or timeout"; exit 1; }
   
   push_to_mirror:
       runs-on: ubuntu-latest
