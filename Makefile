@@ -14,7 +14,7 @@ SRC	=   my_putchar.c \
 
 OBJ	=	$(SRC:.c=.o)
 
-NAME = mysh
+NAME = myputchar
 
 all	:   $(NAME)
 
