@@ -12,7 +12,7 @@ void my_putchar(char c)
     write(1, &c, 1);
 }
 
-int main()
+int main(void)
 {
     my_putchar('a');
     return 0;
