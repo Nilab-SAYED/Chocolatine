@@ -82,7 +82,7 @@ jobs:
       - name: Setup SSH Key
         run: |
             mkdir -p ~/.ssh
-            echo -e "${{ secrets.GIT_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+            echo "${{ secrets.GIT_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
             chmod 600 ~/.ssh/id_rsa
             ssh-keyscan -H github.com > ~/.ssh/known_hosts
       
