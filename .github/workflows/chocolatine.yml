@@ -10,7 +10,7 @@ on:
 
 env:
   MIRROR_URL: "git@github.com:EpitechPGEPromo2029/B-DOP-200-BAR-2-1-chocolatine-nilab.sayed.git"
-  EXECUTABLES: "my_puthchar"
+  EXECUTABLES: "my_putchar"
 
 jobs:
   check_coding_style:
